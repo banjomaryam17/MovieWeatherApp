@@ -1,3 +1,4 @@
+using System.Linq;
 using RestSharp;
 using System.Text.Json;
 using MovieWeatherApp.Model;

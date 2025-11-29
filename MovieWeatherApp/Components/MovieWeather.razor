@@ -275,4 +275,20 @@
             await SearchMovies();
         }
     }
+    private void SortMoviesByYear()
+    {
+        if (movies != null && movies.Count > 0)
+        {
+            movies.Sort(); 
+        }
+    }
+    
+    private void SortMoviesByTitle()
+    {
+        if (movies != null && movies.Count > 0)
+        {
+            movies = movies.OrderBy(m => m.Title).ToList();
+        }
+    }
+    
 }

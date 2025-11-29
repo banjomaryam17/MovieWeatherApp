@@ -1,9 +1,10 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace MovieWeatherApp.Model
 {
-    public class Movie
+    public class Movie : IComparable<Movie>
     {
         [JsonPropertyName("Title")]
         [Required(ErrorMessage = "Title is required")]
@@ -47,14 +48,12 @@ namespace MovieWeatherApp.Model
             Director = string.Empty;
         }
 
- 
         public bool IsValid()
         {
             return !string.IsNullOrWhiteSpace(Title) && 
                    !string.IsNullOrWhiteSpace(ImdbID);
         }
 
-        
         public override bool Equals(object? obj)
         {
             if (obj == null || obj is not Movie) return false;
@@ -66,9 +65,24 @@ namespace MovieWeatherApp.Model
         {
             return ImdbID.GetHashCode();
         }
+
+        public int CompareTo(Movie? other)
+        {
+            if (other == null) return 1;
+            
+            // Handle empty years
+            if (string.IsNullOrEmpty(this.Year) && string.IsNullOrEmpty(other.Year))
+                return 0;
+            if (string.IsNullOrEmpty(this.Year))
+                return 1;
+            if (string.IsNullOrEmpty(other.Year))
+                return -1;
+            
+            // Sort by year (newest first)
+            return string.Compare(other.Year, this.Year, StringComparison.Ordinal);
+        }
     }
 
- 
     public class MovieSearchResult
     {
         [JsonPropertyName("Search")]
