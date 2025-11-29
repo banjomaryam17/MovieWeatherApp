@@ -1,6 +1,7 @@
 @page "/MovieWeather"
 @using MovieWeatherApp.Model
 @using MovieWeatherApp.Services
+@using System.Linq
 @rendermode InteractiveServer
 
 <PageTitle>Movie Weather App</PageTitle>
@@ -87,7 +88,17 @@
     {
         <div class="row mt-5">
             <div class="col-12">
-                <h3>Search Results (@movies.Count movies found)</h3>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>Search Results (@movies.Count movies found)</h3>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" @onclick="SortMoviesByYear">
+                            📅 Sort by Year
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="SortMoviesByTitle">
+                            🔤 Sort by Title
+                        </button>
+                    </div>
+                </div>
             </div>
             
             @foreach (var movie in movies)
