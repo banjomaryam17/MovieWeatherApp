@@ -1,0 +1,278 @@
+@page "/MovieWeather"
+@using MovieWeatherApp.Model
+@using MovieWeatherApp.Services
+@rendermode InteractiveServer
+
+<PageTitle>Movie Weather App</PageTitle>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">🎬 Plan Your Perfect Movie Night 🌤️</h1>
+    <p class="text-center text-muted">Find movies based on your local weather!</p>
+
+    <div class="row mt-5">
+        <!-- Weather Search Section -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h3 class="card-title">☁️ Check Weather</h3>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Enter City Name:</label>
+                        <input type="text" 
+                               class="form-control" 
+                               @bind="cityInput" 
+                               placeholder="e.g., London, Dublin, Paris"
+                               @onkeypress="HandleWeatherKeyPress" />
+                    </div>
+                    
+                    <button class="btn btn-primary w-100" @onclick="SearchWeather">
+                        Get Weather
+                    </button>
+
+                    @if (currentWeather != null)
+                    {
+                        <div class="alert alert-info mt-3">
+                            <h5>@currentWeather.City</h5>
+                            <p class="mb-1"><strong>Temperature:</strong> @currentWeather.Temperature°C</p>
+                            <p class="mb-1"><strong>Feels Like:</strong> @currentWeather.FeelsLike°C</p>
+                            <p class="mb-1"><strong>Condition:</strong> @currentWeather.Description</p>
+                            <p class="mb-1"><strong>Humidity:</strong> @currentWeather.Humidity%</p>
+                            <hr />
+                            <p class="mb-0"><em>@currentWeather.SuggestMovieMood()</em></p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(weatherError))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            @weatherError
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Movie Search Section -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h3 class="card-title">🎬 Search Movies</h3>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Enter Movie Title:</label>
+                        <input type="text" 
+                               class="form-control" 
+                               @bind="movieInput" 
+                               placeholder="e.g., Inception, Titanic"
+                               @onkeypress="HandleMovieKeyPress" />
+                    </div>
+                    
+                    <button class="btn btn-success w-100" @onclick="SearchMovies">
+                        Search Movies
+                    </button>
+
+                    @if (!string.IsNullOrEmpty(movieError))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            @movieError
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movie Results Section -->
+    @if (movies != null && movies.Count > 0)
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3>Search Results (@movies.Count movies found)</h3>
+            </div>
+            
+            @foreach (var movie in movies)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(movie.Poster) && movie.Poster != "N/A")
+                        {
+                            <img src="@movie.Poster" class="card-img-top" alt="@movie.Title" style="height: 400px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 400px;">
+                                <span>No Poster</span>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@movie.Title</h5>
+                            <p class="card-text">
+                                <strong>Year:</strong> @movie.Year<br />
+                                <strong>Type:</strong> @movie.Type
+                            </p>
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => GetMovieDetails(movie.ImdbID)">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Movie Details Modal -->
+    @if (selectedMovie != null)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@selectedMovie.Title (@selectedMovie.Year)</h5>
+                        <button type="button" class="btn-close" @onclick="CloseDetails"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @if (!string.IsNullOrEmpty(selectedMovie.Poster) && selectedMovie.Poster != "N/A")
+                                {
+                                    <img src="@selectedMovie.Poster" class="img-fluid" alt="@selectedMovie.Title" />
+                                }
+                            </div>
+                            <div class="col-md-8">
+                                <p><strong>Director:</strong> @selectedMovie.Director</p>
+                                <p><strong>Genre:</strong> @selectedMovie.Genre</p>
+                                <p><strong>IMDb Rating:</strong> ⭐ @selectedMovie.ImdbRating</p>
+                                <p><strong>Plot:</strong> @selectedMovie.Plot</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseDetails">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (isLoadingWeather || isLoadingMovies)
+    {
+        <div class="text-center mt-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string cityInput = string.Empty;
+    private string movieInput = string.Empty;
+    
+    private Weather? currentWeather;
+    private List<Movie>? movies;
+    private Movie? selectedMovie;
+    
+    private string weatherError = string.Empty;
+    private string movieError = string.Empty;
+    
+    private bool isLoadingWeather = false;
+    private bool isLoadingMovies = false;
+
+    private async Task SearchWeather()
+    {
+        weatherError = string.Empty;
+        currentWeather = null;
+        isLoadingWeather = true;
+
+        if (string.IsNullOrWhiteSpace(cityInput))
+        {
+            weatherError = "Please enter a city name";
+            isLoadingWeather = false;
+            return;
+        }
+
+        try
+        {
+            currentWeather = await WeatherService.GetWeatherAsync(cityInput);
+            
+            if (currentWeather == null)
+            {
+                weatherError = "City not found. Please check the spelling and try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            weatherError = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingWeather = false;
+        }
+    }
+
+    private async Task SearchMovies()
+    {
+        movieError = string.Empty;
+        movies = null;
+        selectedMovie = null;
+        isLoadingMovies = true;
+
+        if (string.IsNullOrWhiteSpace(movieInput))
+        {
+            movieError = "Please enter a movie title";
+            isLoadingMovies = false;
+            return;
+        }
+
+        try
+        {
+            movies = await MovieService.SearchMoviesAsync(movieInput);
+            
+            if (movies == null || movies.Count == 0)
+            {
+                movieError = "No movies found. Try a different search term.";
+            }
+        }
+        catch (Exception ex)
+        {
+            movieError = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingMovies = false;
+        }
+    }
+
+    private async Task GetMovieDetails(string imdbId)
+    {
+        try
+        {
+            selectedMovie = await MovieService.GetMovieDetailsAsync(imdbId);
+        }
+        catch (Exception ex)
+        {
+            movieError = $"Error loading details: {ex.Message}";
+        }
+    }
+
+    private void CloseDetails()
+    {
+        selectedMovie = null;
+    }
+
+    private async Task HandleWeatherKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchWeather();
+        }
+    }
+
+    private async Task HandleMovieKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchMovies();
+        }
+    }
+}
