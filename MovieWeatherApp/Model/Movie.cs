@@ -1,20 +1,39 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
 namespace MovieWeatherApp.Model
 {
     public class Movie
     {
+        [JsonPropertyName("Title")]
         [Required(ErrorMessage = "Title is required")]
         public string Title { get; set; }
-        public string Year { get; set; }
-        [Required] 
-        public string ImdbID { get; set; }
-        public string Type { get; set; }
-        public string Poster { get; set; }
-        public string Plot { get; set; }
-        public string ImdbRating { get; set; }
-        public string Genre { get; set; }
-        public string Director { get; set; }
         
+        [JsonPropertyName("Year")]
+        public string Year { get; set; }
+        
+        [JsonPropertyName("imdbID")]
+        [Required]
+        public string ImdbID { get; set; }
+        
+        [JsonPropertyName("Type")]
+        public string Type { get; set; }
+        
+        [JsonPropertyName("Poster")]
+        public string Poster { get; set; }
+        
+        [JsonPropertyName("Plot")]
+        public string Plot { get; set; }
+        
+        [JsonPropertyName("imdbRating")]
+        public string ImdbRating { get; set; }
+        
+        [JsonPropertyName("Genre")]
+        public string Genre { get; set; }
+        
+        [JsonPropertyName("Director")]
+        public string Director { get; set; }
+
         public Movie()
         {
             Title = string.Empty;
@@ -27,14 +46,15 @@ namespace MovieWeatherApp.Model
             Genre = string.Empty;
             Director = string.Empty;
         }
+
+ 
         public bool IsValid()
         {
             return !string.IsNullOrWhiteSpace(Title) && 
                    !string.IsNullOrWhiteSpace(ImdbID);
         }
 
-
-       
+        
         public override bool Equals(object? obj)
         {
             if (obj == null || obj is not Movie) return false;
@@ -46,5 +66,18 @@ namespace MovieWeatherApp.Model
         {
             return ImdbID.GetHashCode();
         }
+    }
+
+ 
+    public class MovieSearchResult
+    {
+        [JsonPropertyName("Search")]
+        public Movie[]? Search { get; set; }
+        
+        [JsonPropertyName("totalResults")]
+        public string? TotalResults { get; set; }
+        
+        [JsonPropertyName("Response")]
+        public string? Response { get; set; }
     }
 }

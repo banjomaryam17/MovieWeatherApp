@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="10.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
       <PackageReference Include="RestSharp" Version="113.0.1-alpha.0.1" />
     </ItemGroup>
