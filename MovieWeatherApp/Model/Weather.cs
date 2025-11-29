@@ -3,10 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace MovieWeatherApp.Model
 {
-    public class Weather
+    public class Weather : BaseEntity
     {
         [Required(ErrorMessage = "City name is required")]
-        [MinLength(2, ErrorMessage = "City name must be at least 2 characters")]
+        [MinLength(3, ErrorMessage = "City name must be at least 3 characters")]
         public string City { get; set; }
         
         [JsonPropertyName("temp")]
@@ -34,9 +34,14 @@ namespace MovieWeatherApp.Model
             Humidity = 0;
         }
         
-        public bool IsValid()
+        public override bool IsValid()
         {
-            return !string.IsNullOrWhiteSpace(City) && City.Length >= 2;
+            return !string.IsNullOrWhiteSpace(City) && City.Length >= 3;
+        }
+
+        public override int GetHashCode()
+        {
+            return Temperature.GetHashCode();
         }
 
         // Method to suggest movie mood based on weather

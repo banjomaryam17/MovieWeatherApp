@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MovieWeatherApp.Model
 {
-    public class Movie : IComparable<Movie>
+    public class Movie :BaseEntity, IComparable<Movie>
     {
         [JsonPropertyName("Title")]
         [Required(ErrorMessage = "Title is required")]
@@ -48,7 +48,7 @@ namespace MovieWeatherApp.Model
             Director = string.Empty;
         }
 
-        public bool IsValid()
+        public override bool IsValid()
         {
             return !string.IsNullOrWhiteSpace(Title) && 
                    !string.IsNullOrWhiteSpace(ImdbID);
