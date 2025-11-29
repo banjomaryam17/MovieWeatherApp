@@ -72,6 +72,22 @@
                         Search Movies
                     </button>
 
+                    <!-- ADD THIS SECTION -->
+                    @if (recentSearches.Count > 0)
+                    {
+                        <div class="mt-3">
+                            <label class="form-label small text-muted">Recent Searches:</label>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var search in recentSearches)
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => SearchFromRecent(search)">
+                                        @search
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
                     @if (!string.IsNullOrEmpty(movieError))
                     {
                         <div class="alert alert-danger mt-3">
@@ -82,39 +98,6 @@
             </div>
         </div>
     </div>
-    <!-- Favorites Section -->
-@if (favorites != null && favorites.Count > 0)
-{
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h4 class="card-title">⭐ My Favorite Movies (@favorites.Count)</h4>
-                    <div class="row">
-                        @foreach (var fav in favorites.Take(5))
-                        {
-                            <div class="col-md-2 mb-2">
-                                <div class="card h-100">
-                                    @if (!string.IsNullOrEmpty(fav.Poster) && fav.Poster != "N/A")
-                                    {
-                                        <img src="@fav.Poster" class="card-img-top" alt="@fav.Title" style="height: 200px; object-fit: cover;" />
-                                    }
-                                    <div class="card-body p-2">
-                                        <h6 class="card-title small">@fav.Title</h6>
-                                        <p class="card-text small">@fav.Year</p>
-                                        <button class="btn btn-sm btn-danger w-100" @onclick="() => ToggleFavorite(fav)">
-                                            Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-}
 
     <!-- Movie Results Section -->
     @if (movies != null && movies.Count > 0)
@@ -156,10 +139,6 @@
                             </p>
                             <button class="btn btn-sm btn-outline-primary" @onclick="() => GetMovieDetails(movie.ImdbID)">
                                 View Details
-                            </button>
-                            <button class="btn btn-sm @(IsMovieFavorite(movie.ImdbID) ? "btn-warning" : "btn-outline-warning")" 
-                                    @onclick="() => ToggleFavorite(movie)">
-                                @(IsMovieFavorite(movie.ImdbID) ? "⭐ Favorited" : "☆ Favorite")
                             </button>
                         </div>
                     </div>
@@ -213,14 +192,13 @@
 </div>
 
 @code {
-    
     private string cityInput = string.Empty;
     private string movieInput = string.Empty;
     
     private Weather? currentWeather;
     private List<Movie>? movies;
     private Movie? selectedMovie;
-    private List<Movie> favorites = new List<Movie>();
+    private List<string> recentSearches = new List<string>();
     private string weatherError = string.Empty;
     private string movieError = string.Empty;
     
@@ -275,8 +253,11 @@
 
         try
         {
+            // ADD THIS: Track search
+            AddToRecentSearches(movieInput);
+        
             movies = await MovieService.SearchMoviesAsync(movieInput);
-            
+        
             if (movies == null || movies.Count == 0)
             {
                 movieError = "No movies found. Try a different search term.";
@@ -339,31 +320,27 @@
             movies = movies.OrderBy(m => m.Title).ToList();
         }
     }
-    protected override void OnInitialized()
+    private void AddToRecentSearches(string searchTerm)
     {
-        LoadFavorites();
-    }
-
-    private void LoadFavorites()
-    {
-        favorites = FavoritesService.GetFavorites();
-    }
-
-    private void ToggleFavorite(Movie movie)
-    {
-        if (FavoritesService.IsFavorite(movie.ImdbID))
+        // Remove if already exists (to avoid duplicates)
+        if (recentSearches.Contains(searchTerm, StringComparer.OrdinalIgnoreCase))
         {
-            FavoritesService.RemoveFavorite(movie.ImdbID);
+            recentSearches.Remove(searchTerm);
         }
-        else
+    
+        // Add to the beginning of the list
+        recentSearches.Insert(0, searchTerm);
+    
+        // Keep only last 5 searches
+        if (recentSearches.Count > 5)
         {
-            FavoritesService.AddFavorite(movie);
+            recentSearches.RemoveAt(5);
         }
-        LoadFavorites(); // Refresh the list
     }
 
-    private bool IsMovieFavorite(string imdbId)
+    private async Task SearchFromRecent(string searchTerm)
     {
-        return FavoritesService.IsFavorite(imdbId);
+        movieInput = searchTerm;
+        await SearchMovies();
     }
 }
