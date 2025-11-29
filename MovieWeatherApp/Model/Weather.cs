@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
 namespace MovieWeatherApp.Model
 {
     public class Weather
@@ -6,12 +8,22 @@ namespace MovieWeatherApp.Model
         [Required(ErrorMessage = "City name is required")]
         [MinLength(2, ErrorMessage = "City name must be at least 2 characters")]
         public string City { get; set; }
-        public double Temperature { get; set; }
-        public string Description { get; set; }
-        public string Icon { get; set; }
-        public double FeelsLike { get; set; }
-        public int Humidity { get; set; }
         
+        [JsonPropertyName("temp")]
+        public double Temperature { get; set; }
+        
+        [JsonPropertyName("description")]
+        public string Description { get; set; }
+        
+        [JsonPropertyName("icon")]
+        public string Icon { get; set; }
+        
+        [JsonPropertyName("feels_like")]
+        public double FeelsLike { get; set; }
+        
+        [JsonPropertyName("humidity")]
+        public int Humidity { get; set; }
+
         public Weather()
         {
             City = string.Empty;
@@ -21,23 +33,60 @@ namespace MovieWeatherApp.Model
             FeelsLike = 0;
             Humidity = 0;
         }
+        
         public bool IsValid()
         {
             return !string.IsNullOrWhiteSpace(City) && City.Length >= 2;
         }
-        
+
+        // Method to suggest movie mood based on weather
         public string SuggestMovieMood()
         {
-            if (Description.Contains("rain") || Description.Contains("drizzle"))
+            var desc = Description.ToLower();
+            
+            if (desc.Contains("rain") || desc.Contains("drizzle"))
                 return "Cozy indoor movies - perfect for thrillers or dramas!";
-            else if (Description.Contains("snow"))
+            else if (desc.Contains("snow"))
                 return "Winter wonderland - great for holiday movies!";
-            else if (Description.Contains("cloud"))
+            else if (desc.Contains("cloud"))
                 return "Overcast day - ideal for mystery or indie films!";
             else if (Temperature > 25)
                 return "Sunny and warm - try adventure or comedy movies!";
             else
                 return "Perfect movie weather - any genre works!";
         }
+    }
+    
+    public class WeatherResponse
+    {
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+        
+        [JsonPropertyName("main")]
+        public WeatherMain? Main { get; set; }
+        
+        [JsonPropertyName("weather")]
+        public WeatherDescription[]? WeatherList { get; set; }
+    }
+
+    public class WeatherMain
+    {
+        [JsonPropertyName("temp")]
+        public double Temp { get; set; }
+        
+        [JsonPropertyName("feels_like")]
+        public double FeelsLike { get; set; }
+        
+        [JsonPropertyName("humidity")]
+        public int Humidity { get; set; }
+    }
+
+    public class WeatherDescription
+    {
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+        
+        [JsonPropertyName("icon")]
+        public string? Icon { get; set; }
     }
 }
