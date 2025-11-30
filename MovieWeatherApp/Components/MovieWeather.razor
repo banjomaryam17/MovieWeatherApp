@@ -98,6 +98,39 @@
             </div>
         </div>
     </div>
+    <!-- Favorites Section -->
+    @if (favorites != null && favorites.Count > 0)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">⭐ My Favorite Movies (@favorites.Count)</h4>
+                        <div class="row">
+                            @foreach (var fav in favorites.Take(5))
+                            {
+                                <div class="col-md-2 mb-2">
+                                    <div class="card h-100">
+                                        @if (!string.IsNullOrEmpty(fav.Poster) && fav.Poster != "N/A")
+                                        {
+                                            <img src="@fav.Poster" class="card-img-top" alt="@fav.Title" style="height: 200px; object-fit: cover;" />
+                                        }
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title small">@fav.Title</h6>
+                                            <p class="card-text small">@fav.Year</p>
+                                            <button class="btn btn-sm btn-danger w-100" @onclick="() => ToggleFavorite(fav)">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <!-- Movie Results Section -->
     @if (movies != null && movies.Count > 0)
@@ -139,6 +172,10 @@
                             </p>
                             <button class="btn btn-sm btn-outline-primary" @onclick="() => GetMovieDetails(movie.ImdbID)">
                                 View Details
+                            </button>
+                            <button class="btn btn-sm @(IsMovieFavorite(movie.ImdbID) ? "btn-warning" : "btn-outline-warning") mt-1" 
+                                    @onclick="() => ToggleFavorite(movie)">
+                                @(IsMovieFavorite(movie.ImdbID) ? "⭐ Favorited" : "☆ Favorite")
                             </button>
                         </div>
                     </div>
@@ -192,6 +229,15 @@
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        LoadFavorites();
+    }
+
+    private void LoadFavorites()
+    {
+        favorites = FavoritesService.GetFavorites();
+    }
     private string cityInput = string.Empty;
     private string movieInput = string.Empty;
     
@@ -199,6 +245,7 @@
     private List<Movie>? movies;
     private Movie? selectedMovie;
     private List<string> recentSearches = new List<string>();
+    private List<Movie> favorites = new List<Movie>();
     private string weatherError = string.Empty;
     private string movieError = string.Empty;
     
@@ -342,5 +389,22 @@
     {
         movieInput = searchTerm;
         await SearchMovies();
+    }
+    private void ToggleFavorite(Movie movie)
+    {
+        if (FavoritesService.IsFavorite(movie.ImdbID))
+        {
+            FavoritesService.RemoveFavorite(movie.ImdbID);
+        }
+        else
+        {
+            FavoritesService.AddFavorite(movie);
+        }
+        LoadFavorites();
+    }
+
+    private bool IsMovieFavorite(string imdbId)
+    {
+        return FavoritesService.IsFavorite(imdbId);
     }
 }
