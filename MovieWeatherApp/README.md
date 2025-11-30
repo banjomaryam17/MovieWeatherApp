@@ -54,5 +54,5 @@ This application helps users plan their movie night by suggesting movie genres b
 - Snowy weather → Suggests holiday movies
 
 Users can search for movies, save favorites, and quickly access recent searches for a personalized experience.
-```
+
 
