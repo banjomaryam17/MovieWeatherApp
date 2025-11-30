@@ -4,6 +4,7 @@ A Blazor web application that combines weather forecasts with movie recommendati
 
 ## Author
 Maryam Ayomide Banjo
+
 DkIT - Web Frameworks CA2 - November 2025
 
 ## Features
