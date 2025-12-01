@@ -69,16 +69,12 @@ namespace MovieWeatherApp.Model
         public int CompareTo(Movie? other)
         {
             if (other == null) return 1;
-            
-            // Handle empty years
             if (string.IsNullOrEmpty(this.Year) && string.IsNullOrEmpty(other.Year))
                 return 0;
             if (string.IsNullOrEmpty(this.Year))
                 return 1;
             if (string.IsNullOrEmpty(other.Year))
                 return -1;
-            
-            // Sort by year (newest first)
             return string.Compare(other.Year, this.Year, StringComparison.Ordinal);
         }
     }

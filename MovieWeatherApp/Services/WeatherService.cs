@@ -13,9 +13,9 @@ namespace MovieWeatherApp.Services
         public static async Task<Weather?> GetWeatherAsync(string city)
         {
             // Validation
-            if (string.IsNullOrWhiteSpace(city) || city.Length < 2)
+            if (string.IsNullOrWhiteSpace(city) || city.Length < 3)
             {
-                Console.WriteLine("City name must be at least 2 characters");
+                Console.WriteLine("City name must be at least 3 characters");
                 return null;
             }
 

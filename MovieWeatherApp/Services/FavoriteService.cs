@@ -37,7 +37,7 @@ namespace MovieWeatherApp.Services
                 // Check if already in favorites
                 if (favorites.Any(m => m.ImdbID == movie.ImdbID))
                 {
-                    return false; // Already exists
+                    return false;
                 }
 
                 favorites.Add(movie);
@@ -74,8 +74,6 @@ namespace MovieWeatherApp.Services
                 return false;
             }
         }
-
-        // Check if a movie is in favorites
         public static bool IsFavorite(string imdbId)
         {
             var favorites = GetFavorites();

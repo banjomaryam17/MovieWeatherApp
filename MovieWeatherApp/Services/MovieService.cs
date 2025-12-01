@@ -82,8 +82,6 @@ namespace MovieWeatherApp.Services
                         response.Content,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                     );
-
-                    // Validate the movie object
                     if (movie != null && movie.IsValid())
                     {
                         return movie;

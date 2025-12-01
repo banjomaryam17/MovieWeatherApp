@@ -43,8 +43,6 @@ namespace MovieWeatherApp.Model
         {
             return Temperature.GetHashCode();
         }
-
-        // Method to suggest movie mood based on weather
         public string SuggestMovieMood()
         {
             var desc = Description.ToLower();
